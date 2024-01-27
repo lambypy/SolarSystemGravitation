@@ -27,7 +27,6 @@ sun = pygame.transform.scale(pygame.image.load("Images/sun_img.png"), (PLANET_SI
 asteroid = pygame.transform.scale(pygame.image.load("Images/asteroid.jpg"), (10, 10))
 
 
-
 class Asteroid:
     def __init__(self, x, y, mass):
         self.x = x
@@ -50,6 +49,7 @@ class AsteroidCreation:
 
 
     def move(self, planet=None):
+        """Moving the asteroid based on the planet mass"""
         distance = math.sqrt((self.x - planet.x)**2 + (self.y - planet.y)**2)
         force = (G * self.mass * planet.mass) / distance ** 2
         
@@ -67,14 +67,14 @@ class AsteroidCreation:
 
 
     def draw(self):
-        #pygame.draw.circle(win, RED, (int(self.x), int(self.y)), OBJ_SIZE)
+        """Updates the asteroid position on the screen"""
         win.blit(asteroid, (int(self.x), int(self.y)))
 
 
 
 
 def add_planet_menu():
-    """#TODO"""
+    """Shows the Planet Menu with choices of size and position."""
     pass
 
 
@@ -90,6 +90,7 @@ def user_creation(location, mouse):
 
 def main():
     running = True
+    paused_flag = False
 
     planet = Asteroid(WIDTH // 2, HEIGHT // 2, PLANET_MASS)
     objects = []
@@ -108,11 +109,10 @@ def main():
                 elif event.key == pygame.K_r:
                     # Press "R" to reset
                     print("pressed to reset")
-
-                # Press "S" to save the current layout
-
-
-                # Press "P" to pause 
+                elif event.key == pygame.K_p:
+                    # Press "P" to pause
+                    paused_flag = not paused_flag
+                    print("pressed to pause")
             # Add in the user creation 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if temp_obj_pos:
@@ -122,27 +122,31 @@ def main():
                 else:
                     temp_obj_pos = mouse_pos
 
+        if not paused_flag:
+            win.blit(background, (0, 0))
+            if temp_obj_pos:
+                pygame.draw.line(win, WHITE, temp_obj_pos, mouse_pos, 2)
+                pygame.draw.circle(win, RED, temp_obj_pos, OBJ_SIZE)
 
-        win.blit(background, (0, 0))
-        if temp_obj_pos:
-            pygame.draw.line(win, WHITE, temp_obj_pos, mouse_pos, 2)
-            pygame.draw.circle(win, RED, temp_obj_pos, OBJ_SIZE)
 
+            for obj in objects[:]:
+                obj.draw()
+                obj.move(planet)
+                off_screen = obj.x < 0 or obj.x > WIDTH or obj.y < 0 or obj.y > HEIGHT
+                collided = math.sqrt((obj.x - planet.x)**2 + (obj.y - planet.y)**2) <= PLANET_SIZE
+                if off_screen or collided:
+                    objects.remove(obj)
 
-        for obj in objects[:]:
-            obj.draw()
-            obj.move(planet)
-            off_screen = obj.x < 0 or obj.x > WIDTH or obj.y < 0 or obj.y > HEIGHT
-            collided = math.sqrt((obj.x - planet.x)**2 + (obj.y - planet.y)**2) <= PLANET_SIZE
-            if off_screen or collided:
-                objects.remove(obj)
-
+        # Adds the "Paused" label to the screen
+        if paused_flag:
+            font = pygame.font.Font(None, 36)
+            text = font.render("Paused", True, WHITE)
+            win.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 4 - text.get_height() // 2))
 
         planet.draw()
         pygame.display.update()
 
     pygame.quit()
-
 
 
 if __name__=="__main__":
