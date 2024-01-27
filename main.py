@@ -80,6 +80,7 @@ def add_planet_menu():
 
 
 def user_creation(location, mouse):
+    """Creates the asteroid based on location and mouse direction"""
     t_x, t_y = location
     m_x, m_y = mouse
     vel_x = (m_x - t_x) / VEL_SCALE
