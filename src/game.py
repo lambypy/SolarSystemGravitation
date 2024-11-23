@@ -6,6 +6,7 @@ from settings import WIDTH, HEIGHT, WHITE, RED, OBJ_SIZE, PLANET_SIZE, PLANET_MA
 
 class Game:
     def __init__(self):
+        """Initializes the game with imported settings and objects"""
         pygame.init()
         self.win = pygame.display.set_mode((WIDTH, HEIGHT))
         pygame.display.set_caption("Solar System Gravitation")
@@ -18,6 +19,7 @@ class Game:
         self.temp_obj_pos = None
         self.running = True
         self.paused = False
+        self.quitting = False
 
 
     def user_creation(self, location, mouse):
@@ -34,6 +36,7 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
+                self.quitting = True
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_p:
                     self.paused = not self.paused
@@ -51,21 +54,19 @@ class Game:
     def update(self):
         self.win.blit(self.background, (0, 0))
         if self.temp_obj_pos:
-            pygame.draw.line(self.win, WHITE, self.temp_obj_pos, pygame.mouse.get_pos(), 2)
+            pygame.draw.line(self.win, WHITE, self.temp_obj_pos, 
+                             pygame.mouse.get_pos(), 2)
             pygame.draw.circle(self.win, RED, self.temp_obj_pos, OBJ_SIZE)
 
         for obj in self.objects[:]:
             obj.draw(self.win)
             obj.move([self.planet])
-            off_screen = obj.x < 0 or obj.x > WIDTH or obj.y < 0 or obj.y > HEIGHT
-            collided = math.sqrt((obj.x - self.planet.x) ** 2 + (obj.y - self.planet.y) ** 2) <= PLANET_SIZE
+            off_screen = obj.x_pos < 0 or obj.x_pos > WIDTH or obj.y_pos < 0 \
+                or obj.y_pos > HEIGHT
+            collided = math.sqrt((obj.x_pos - self.planet.x_pos) ** 2 + 
+                                 (obj.y_pos - self.planet.y_pos) ** 2) <= PLANET_SIZE
             if off_screen or collided:
                 self.objects.remove(obj)
-
-        if self.paused:
-            font = pygame.font.Font(None, 36)
-            text = font.render("Paused", True, WHITE)
-            self.win.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 4 - text.get_height() // 2))
 
         self.planet.draw(self.win)
         pygame.display.update()
@@ -76,4 +77,16 @@ class Game:
             self.handle_events()
             if not self.paused:
                 self.update()
+            elif self.quitting:
+                print("Quitting")
+                font = pygame.font.Font(None, 36)
+                num = 3
+                text = font.render(f"Quitting in {num}", True, WHITE)
+                self.win.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 4 - text.get_height() // 2))
+                pygame.display.update()
+            else:
+                font = pygame.font.Font(None, 36)
+                text = font.render("Paused", True, WHITE)
+                self.win.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 4 - text.get_height() // 2))
+                pygame.display.update()
         pygame.quit()
