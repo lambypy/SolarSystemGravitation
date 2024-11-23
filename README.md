@@ -16,6 +16,5 @@ A solar system application that allows you to place asteroids and other planets 
 - A menu to manage current planets, asteroids and statistics of planets hit.
 - A scoreboard with asteroids deployed and planets hit count.
 
-
 ## Language and Libraries used:
 Python, math, pygame 
